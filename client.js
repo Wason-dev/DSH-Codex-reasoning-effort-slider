@@ -61,11 +61,13 @@ window.__ModuleLoader__.load({
       .dsh-codex-reasoning-effort-slider-popup.message .dsh-codex-reasoning-effort-slider-warning{opacity:1}
       .dsh-codex-reasoning-effort-slider-popup.message .dsh-codex-reasoning-effort-slider-warning span{animation:dsh-codex-reasoning-effort-slider-sweep 1.1s linear .2s 1 both}
       @keyframes dsh-codex-reasoning-effort-slider-sweep{from{background-position:100% 0}to{background-position:0% 0}}
-      .dsh-codex-reasoning-effort-slider-rail{position:absolute;left:12px;right:12px;top:65px;height:26px;border-radius:16px;background:var(--dsw-alias-border-l2);touch-action:none;cursor:pointer}
-      .dsh-codex-reasoning-effort-slider-fill,.dsh-codex-reasoning-effort-slider-sparks{position:absolute;inset:0 auto 0 0;width:calc((100% - 30px)*var(--dsh-codex-reasoning-effort-slider-pos,0) + 15px);border-radius:13px 0 0 13px;overflow:hidden;pointer-events:none;transition:width .18s cubic-bezier(.2,.8,.2,1)}
-      .dsh-codex-reasoning-effort-slider-fill{background:#3988f6}
-      .dsh-codex-reasoning-effort-slider-popup.ultra .dsh-codex-reasoning-effort-slider-fill{background:linear-gradient(95deg,#3065de 0%,#7757ee 32%,#b052f1 53%,#7d42e7 76%,#5631d0 100%);background-size:155% 100%;animation:dsh-codex-reasoning-effort-slider-colorflow 3.8s ease-in-out infinite alternate}
-      .dsh-codex-reasoning-effort-slider-popup.ultra .dsh-codex-reasoning-effort-slider-fill:before{content:"";position:absolute;inset:-10px -40px;background:linear-gradient(100deg,transparent 18%,#ffffff08 35%,#ffffff30 48%,#ffffff06 66%,transparent 84%);animation:dsh-codex-reasoning-effort-slider-shimmer 4.5s ease-in-out infinite alternate}
+      .dsh-codex-reasoning-effort-slider-rail{position:absolute;left:12px;right:12px;top:65px;height:26px;border-radius:16px;background:var(--dsw-alias-border-l2);touch-action:none;cursor:grab}
+      .dsh-codex-reasoning-effort-slider-rail.dragging{cursor:grabbing}
+      .dsh-codex-reasoning-effort-slider-fill,.dsh-codex-reasoning-effort-slider-sparks{position:absolute;inset:0 auto 0 0;width:calc((100% - 30px)*var(--dsh-codex-reasoning-effort-slider-pos,0) + 15px);border-radius:16px;overflow:hidden;pointer-events:none;transition:width .18s cubic-bezier(.2,.8,.2,1)}
+      .dsh-codex-reasoning-effort-slider-fill{background:#3988f6;overflow:hidden}
+      .dsh-codex-reasoning-effort-slider-fill:after{content:"";position:absolute;inset:-12px -24px;border-radius:28px;background:linear-gradient(95deg,#3065de 0%,#7757ee 32%,#b052f1 53%,#7d42e7 76%,#5631d0 100%);filter:blur(5px);opacity:0;mask-image:linear-gradient(90deg,transparent 0%,#000 22%,#000 78%,transparent 100%);-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 22%,#000 78%,transparent 100%);transform:translateX(42%);transform-origin:right center;transition:transform 1.8s cubic-bezier(.16,1,.3,1),opacity 1.25s ease,filter 1.8s ease}
+      .dsh-codex-reasoning-effort-slider-popup.ultra .dsh-codex-reasoning-effort-slider-fill:after{opacity:.9;transform:translateX(0)}
+      .dsh-codex-reasoning-effort-slider-popup.ultra .dsh-codex-reasoning-effort-slider-fill:before{content:"";position:absolute;inset:-10px -40px;background:linear-gradient(100deg,transparent 18%,#ffffff08 35%,#ffffff30 48%,#ffffff06 66%,transparent 84%);animation:dsh-codex-reasoning-effort-slider-shimmer 4.5s ease-in-out infinite alternate;z-index:1}
       @keyframes dsh-codex-reasoning-effort-slider-colorflow{from{background-position:0 0}to{background-position:100% 0}}
       @keyframes dsh-codex-reasoning-effort-slider-shimmer{from{transform:translateX(-45%)}to{transform:translateX(45%)}}
       .dsh-codex-reasoning-effort-slider-dot{position:absolute;top:11px;left:calc((100% - 30px)*var(--dsh-codex-reasoning-effort-slider-tick) + 15px);width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--dsw-alias-label-caption);pointer-events:none;transition:opacity .18s ease .22s,transform .14s ease}
@@ -75,7 +77,9 @@ window.__ModuleLoader__.load({
       .dsh-codex-reasoning-effort-slider-popup.fast-mode .dsh-codex-reasoning-effort-slider-sparks{opacity:1;transition-delay:0s,.18s}
       .dsh-codex-reasoning-effort-slider-popup.ultra .dsh-codex-reasoning-effort-slider-sparks{opacity:1}
       .dsh-codex-reasoning-effort-slider-particles{display:block;width:var(--dsh-codex-reasoning-effort-slider-rail-width,248px);height:26px}
-      .dsh-codex-reasoning-effort-slider-knob{position:absolute;left:calc((100% - 30px)*var(--dsh-codex-reasoning-effort-slider-pos,0));top:-2px;width:30px;height:30px;border-radius:50%;background:var(--dsw-alias-bg-layer-2);box-shadow:var(--dsw-elevation-panel);border:.5px solid var(--dsw-alias-border-l1);pointer-events:none;transition:left .18s cubic-bezier(.2,.8,.2,1)}
+      .dsh-codex-reasoning-effort-slider-knob{position:absolute;left:calc((100% - 30px)*var(--dsh-codex-reasoning-effort-slider-pos,0));top:-2px;width:30px;height:30px;border-radius:50%;background:var(--dsw-alias-bg-layer-2);box-shadow:var(--dsw-elevation-panel);border:.5px solid var(--dsw-alias-border-l1);pointer-events:auto;cursor:grab;transform:scale(1);transition:left .18s cubic-bezier(.2,.8,.2,1),transform .14s ease}
+      .dsh-codex-reasoning-effort-slider-knob:hover,.dsh-codex-reasoning-effort-slider-rail.dragging .dsh-codex-reasoning-effort-slider-knob{transform:scale(1.08)}
+      .dsh-codex-reasoning-effort-slider-rail.dragging .dsh-codex-reasoning-effort-slider-knob{cursor:grabbing}
       .dsh-codex-reasoning-effort-slider-burst{position:absolute;left:calc(100% - 41px);top:-13px;width:52px;height:52px;pointer-events:none;z-index:4}
       .dsh-codex-reasoning-effort-slider-tooltip{position:absolute;bottom:calc(100% + 4px);padding:6px 9px;white-space:nowrap;background:var(--dsw-alias-bg-layer-2);box-shadow:var(--dsw-elevation-panel);border-radius:8px;font-size:12px;line-height:18px;text-align:center;color:var(--dsw-alias-label-primary);opacity:0;pointer-events:none;transition:opacity .12s;z-index:130}
       .dsh-codex-reasoning-effort-slider-tooltip span{color:var(--dsw-alias-label-secondary)}
@@ -124,7 +128,7 @@ window.__ModuleLoader__.load({
       const [busy, setBusy] = useState(false);
       const rootRef = useRef(null), popupRef = useRef(null), railRef = useRef(null);
       const canvasRef = useRef(null), burstRef = useRef(null), triggerRef = useRef(null);
-      const previewRef = useRef(null), dragRef = useRef(false), mountedRef = useRef(true);
+      const previewRef = useRef(null), dragRef = useRef(false), dragPointerRef = useRef(null), mountedRef = useRef(true);
       const busyRef = useRef(false);
       const timersRef = useRef([]);
       const latest = useRef({});
@@ -207,7 +211,7 @@ window.__ModuleLoader__.load({
         else { previewRef.current = null; setPreview(null); }
       }
       function close() {
-        cancelDrag();
+        discardDrag();
         setOpen(false);
         triggerRef.current?.focus({ preventScroll: true });
       }
@@ -318,11 +322,13 @@ window.__ModuleLoader__.load({
         if (busyRef.current || disabled || efforts.length < 2) return;
         event.currentTarget.focus({ preventScroll: true });
         event.currentTarget.setPointerCapture(event.pointerId);
-        dragRef.current = true; setDragging(true); setHovered(-1);
+        dragRef.current = true;
+        dragPointerRef.current = event.pointerId;
+        setDragging(true); setHovered(-1);
         showEffort(efforts[nearest(event)].id);
       }
       function pointerMove(event) {
-        if (dragRef.current) {
+        if (dragRef.current && event.pointerId === dragPointerRef.current) {
           showEffort(efforts[nearest(event)].id);
         } else {
           const i = nearest(event), box = railRef.current.getBoundingClientRect();
@@ -330,14 +336,18 @@ window.__ModuleLoader__.load({
           setHovered(Math.abs(event.clientX - tickX) < 10 && i !== index ? i : -1);
         }
       }
-      function finish() {
-        if (!dragRef.current) return;
-        dragRef.current = false; setDragging(false);
-        chooseEffort(previewRef.current);
+      function finish(event) {
+        if (!dragRef.current || event.pointerId !== dragPointerRef.current) return;
+        const next = previewRef.current;
+        dragRef.current = false;
+        dragPointerRef.current = null;
+        setDragging(false);
+        chooseEffort(next);
       }
-      function cancelDrag() {
+      function discardDrag() {
         if (!dragRef.current) return;
         dragRef.current = false;
+        dragPointerRef.current = null;
         setDragging(false);
         previewRef.current = null;
         setPreview(null);
@@ -429,7 +439,7 @@ window.__ModuleLoader__.load({
               'aria-label': t('effort'), 'aria-valuemin': 0, 'aria-valuemax': efforts.length - 1,
               'aria-valuenow': index, 'aria-valuetext': currentLabel, 'aria-disabled': busy || disabled,
               onPointerDown: pointerDown, onPointerMove: pointerMove, onPointerUp: finish,
-              onPointerCancel: cancelDrag, onLostPointerCapture: cancelDrag,
+              onPointerCancel: finish, onLostPointerCapture: finish,
               onPointerLeave: () => setHovered(-1), onKeyDown: keyDown
             }, h('div', { className: 'dsh-codex-reasoning-effort-slider-fill' }),
             ...efforts.map((effort, i) => h('i', { key: effort.id,
