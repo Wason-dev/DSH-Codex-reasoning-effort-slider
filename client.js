@@ -2,17 +2,18 @@ window.__ModuleLoader__.load({
   id: '@local/dsh-codex-reasoning-effort-slider',
   factory(require) {
     const React = require('react');
+    const ReactDOM = require('react-dom');
     const h = React.createElement;
     const { useState, useEffect, useLayoutEffect, useRef, useSyncExternalStore } = React;
     const NS = 'dsh-codex-reasoning-effort-slider';
     const zh = {
-      choose: '选择模型', effort: '思考等级', fast: '1.5倍速', usage: '用量更多', visual: '(无实际作用)',
+      choose: '选择模型', effort: '思考等级', team: '智能体团队', teamHint: '共享任务板协调多个智能体分工与进度', teamCost: '复杂任务更佳，token 开销更多', teamConfirm: '可能影响任务协作，\n增加后续用量开销，再次点击确认', teamTurningOn: '正在开启团队…', teamTurningOff: '正在关闭团队…', teamOn: '已开启智能体团队', teamOff: '已关闭智能体团队', teamFail: '切换团队模式失败，请稍后再试', teamBusy: '模型正在输出，稍后再试', teamUnavailable: '此会话不能切换团队模式',
       reset: '重置为默认', warning: '更快消耗使用额度', model: '切换模型', back: '返回',
       loading: '正在加载模型', empty: '没有可用模型', unsupported: '此模型未提供思考等级',
       retry: '重试', busy: '正在切换', failed: '切换失败', unavailable: '此会话不能切换模型'
     };
     const en = {
-      choose: 'Select model', effort: 'Reasoning effort', fast: '1.5x speed', usage: 'Uses more quota', visual: '(No actual effect)',
+      choose: 'Select model', effort: 'Reasoning effort', team: 'Agent teamwork', teamHint: 'Coordinates member tasks and progress on a shared board', teamCost: 'Better for complex tasks, with higher token use', teamConfirm: 'This may affect collaboration and increase later token use.\nClick again to confirm', teamTurningOn: 'Turning teamwork on…', teamTurningOff: 'Turning teamwork off…', teamOn: 'Agent teamwork on', teamOff: 'Agent teamwork off', teamFail: 'Could not switch teamwork, try again later', teamBusy: 'The model is still replying. Try again in a moment', teamUnavailable: 'Team mode is unavailable in this session',
       reset: 'Reset to default', warning: 'Consumes usage quota faster', model: 'Switch model', back: 'Back',
       loading: 'Loading models', empty: 'No available models', unsupported: 'No reasoning levels for this model',
       retry: 'Retry', busy: 'Switching', failed: 'Selection failed', unavailable: 'Model selection unavailable'
@@ -21,8 +22,8 @@ window.__ModuleLoader__.load({
     const order = ['off', 'low', 'high', 'max'];
     const styles = `
       .dsh-codex-reasoning-effort-slider-root{position:relative;display:inline-flex;font-family:var(--dsw-font-family);font-size:14px;letter-spacing:0}
-      .dsh-codex-reasoning-effort-slider-root *{box-sizing:border-box;corner-shape:round}
-      .dsh-codex-reasoning-effort-slider-root button{font:inherit;cursor:pointer;border:0}
+      .dsh-codex-reasoning-effort-slider-root *,.dsh-codex-reasoning-effort-slider-popup *{box-sizing:border-box;corner-shape:round}
+      .dsh-codex-reasoning-effort-slider-root button,.dsh-codex-reasoning-effort-slider-popup button{font:inherit;cursor:pointer;border:0}
       .dsh-codex-reasoning-effort-slider-trigger{display:inline-flex;align-items:center;gap:5px;max-width:250px;height:28px;padding:0 7px;background:transparent;color:var(--dsw-alias-label-caption);border-radius:8px;font-size:13px!important}
       .dsh-codex-reasoning-effort-slider-trigger:hover{background:var(--dsw-alias-interactive-bg-hover)}
       .dsh-codex-reasoning-effort-slider-trigger>.dsh-codex-reasoning-effort-slider-icon{transition:transform .18s ease}
@@ -32,9 +33,9 @@ window.__ModuleLoader__.load({
       .dsh-codex-reasoning-effort-slider-trigger.ultra .dsh-codex-reasoning-effort-slider-trigger-effort{color:#9c4ce3}
       .dsh-codex-reasoning-effort-slider-trigger-bolt{width:14px;height:16px;flex:none;fill:currentColor;stroke:currentColor;stroke-width:.7;stroke-linejoin:round;color:var(--dsw-alias-label-primary)}
       .dsh-codex-reasoning-effort-slider-compact{display:var(--dsh-composer-model-icon-display,none)}
-      .dsh-codex-reasoning-effort-slider-root button:disabled{cursor:default;opacity:.5}
-      .dsh-codex-reasoning-effort-slider-root button:focus-visible,.dsh-codex-reasoning-effort-slider-rail:focus-visible{outline:2px solid var(--dsw-focus-ring-color);outline-offset:2px}
-      .dsh-codex-reasoning-effort-slider-popup{position:fixed;bottom:var(--dsh-codex-reasoning-effort-slider-bottom,40px);left:var(--dsh-codex-reasoning-effort-slider-left,12px);width:272px;max-width:calc(100vw - 24px);height:var(--dsh-codex-reasoning-effort-slider-height,104px);max-height:calc(100vh - var(--dsh-codex-reasoning-effort-slider-bottom,40px) - 12px);padding:0;background:var(--dsw-specific-menu,var(--dsw-alias-bg-layer-2));border-radius:14px;box-shadow:var(--dsw-elevation-panel);backdrop-filter:var(--dsw-menu-backdrop-filter);z-index:120;transform-origin:bottom left;transition:opacity .18s ease,transform .18s ease,height .2s cubic-bezier(.2,.8,.2,1),visibility 0s}
+      .dsh-codex-reasoning-effort-slider-root button:disabled,.dsh-codex-reasoning-effort-slider-popup button:disabled{cursor:default;opacity:.5}
+      .dsh-codex-reasoning-effort-slider-root button:focus-visible,.dsh-codex-reasoning-effort-slider-popup button:focus-visible,.dsh-codex-reasoning-effort-slider-rail:focus-visible{outline:2px solid var(--dsw-focus-ring-color);outline-offset:2px}
+      .dsh-codex-reasoning-effort-slider-popup{font-family:var(--dsw-font-family);font-size:14px;letter-spacing:0;position:fixed;bottom:var(--dsh-codex-reasoning-effort-slider-bottom,40px);left:var(--dsh-codex-reasoning-effort-slider-left,12px);width:272px;max-width:calc(100vw - 24px);height:var(--dsh-codex-reasoning-effort-slider-height,104px);max-height:calc(100vh - var(--dsh-codex-reasoning-effort-slider-bottom,40px) - 12px);padding:0;background:var(--dsw-specific-menu,var(--dsw-alias-bg-layer-2));border-radius:14px;box-shadow:var(--dsw-elevation-panel);backdrop-filter:var(--dsw-menu-backdrop-filter);z-index:1100;transform-origin:bottom left;transition:opacity .18s ease,transform .18s ease,height .2s cubic-bezier(.2,.8,.2,1),visibility 0s}
       .dsh-codex-reasoning-effort-slider-popup.closed{opacity:0;pointer-events:none;visibility:hidden;transform:translateY(5px) scale(.98);transition-delay:0s,0s,0s,.18s}
       .dsh-codex-reasoning-effort-slider-pane{position:absolute;left:0;right:0;bottom:0;opacity:1;transform:translateY(0);transition:opacity .14s ease,transform .2s ease,visibility 0s}
       .dsh-codex-reasoning-effort-slider-pane.hidden{opacity:0;pointer-events:none;visibility:hidden;transform:translateY(5px);transition-delay:0s,0s,.14s}
@@ -60,9 +61,22 @@ window.__ModuleLoader__.load({
       .dsh-codex-reasoning-effort-slider-popup.message .dsh-codex-reasoning-effort-slider-model-link,.dsh-codex-reasoning-effort-slider-popup.message .dsh-codex-reasoning-effort-slider-tool{opacity:0;pointer-events:none}
       .dsh-codex-reasoning-effort-slider-popup.message .dsh-codex-reasoning-effort-slider-warning{opacity:1}
       .dsh-codex-reasoning-effort-slider-popup.message .dsh-codex-reasoning-effort-slider-warning span{animation:dsh-codex-reasoning-effort-slider-sweep 1.1s linear .2s 1 both}
+      /* 本地适配：团队模式开关用原来的警告行显示进度/结果（不新增固定高度）。
+         文案仍可能来自错误信息，CSS 再用 nowrap+ellipsis 兜底，避免撑破 272px 面板。 */
+      .dsh-codex-reasoning-effort-slider-popup.compact .dsh-codex-reasoning-effort-slider-model-link,.dsh-codex-reasoning-effort-slider-popup.compact .dsh-codex-reasoning-effort-slider-reset{opacity:0;pointer-events:none}
+      .dsh-codex-reasoning-effort-slider-popup.compact .dsh-codex-reasoning-effort-slider-warning{opacity:1;top:26px;left:24px;right:24px;font-size:12px;line-height:16px}
+      .dsh-codex-reasoning-effort-slider-popup.compact .dsh-codex-reasoning-effort-slider-warning span{animation:none;display:block;width:100%;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:none;color:var(--dsw-alias-label-secondary);-webkit-text-fill-color:currentColor}
+      /* 关闭确认用两行显示：提示较长，单行会溢出；两行在 272px 面板里刚好放得下。
+         必须写在上面 compact 单行规则之后，否则同优先级被 nowrap+ellipsis 覆盖。 */
+      .dsh-codex-reasoning-effort-slider-popup.confirming .dsh-codex-reasoning-effort-slider-warning{top:22px;left:20px;right:20px}
+      .dsh-codex-reasoning-effort-slider-popup.confirming .dsh-codex-reasoning-effort-slider-warning span{white-space:pre-line;overflow:visible;text-overflow:clip;line-height:16px}
       @keyframes dsh-codex-reasoning-effort-slider-sweep{from{background-position:100% 0}to{background-position:0% 0}}
       .dsh-codex-reasoning-effort-slider-rail{position:absolute;left:12px;right:12px;top:65px;height:26px;border-radius:16px;background:var(--dsw-alias-border-l2);touch-action:none;cursor:grab}
       .dsh-codex-reasoning-effort-slider-rail.dragging{cursor:grabbing}
+      /* 本地适配：原来固定 +15px（= 旋钮半径），导致 pos=0（Off 档）时旋钮左侧仍露出 15px 蓝色填充。
+   现在填充宽度 = 旋钮圆心位置 = (100% - 30px) * pos + 15px，但**扣掉旋钮半径的静止溢出**：
+   直接让填充只铺到旋钮圆心，由旋钮自身压在圆心右侧，视觉上就是"填到旋钮处"；
+   Off 档 pos=0 → 宽度 0px（完全空轨道）。用 min() 兜住边界，避免宽度为负。 */
       .dsh-codex-reasoning-effort-slider-fill,.dsh-codex-reasoning-effort-slider-sparks{position:absolute;inset:0 auto 0 0;width:calc((100% - 30px)*var(--dsh-codex-reasoning-effort-slider-pos,0) + 15px);border-radius:16px;overflow:hidden;pointer-events:none;transition:width .18s cubic-bezier(.2,.8,.2,1)}
       .dsh-codex-reasoning-effort-slider-fill{background:#3988f6;overflow:hidden}
       .dsh-codex-reasoning-effort-slider-fill:after{content:"";position:absolute;inset:-12px -24px;border-radius:28px;background:linear-gradient(95deg,#3065de 0%,#7757ee 32%,#b052f1 53%,#7d42e7 76%,#5631d0 100%);filter:blur(5px);opacity:0;mask-image:linear-gradient(90deg,transparent 0%,#000 22%,#000 78%,transparent 100%);-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 22%,#000 78%,transparent 100%);transform:translateX(42%);transform-origin:right center;transition:transform 1.8s cubic-bezier(.16,1,.3,1),opacity 1.25s ease,filter 1.8s ease}
@@ -77,7 +91,9 @@ window.__ModuleLoader__.load({
       .dsh-codex-reasoning-effort-slider-popup.fast-mode .dsh-codex-reasoning-effort-slider-sparks{opacity:1;transition-delay:0s,.18s}
       .dsh-codex-reasoning-effort-slider-popup.ultra .dsh-codex-reasoning-effort-slider-sparks{opacity:1}
       .dsh-codex-reasoning-effort-slider-particles{display:block;width:var(--dsh-codex-reasoning-effort-slider-rail-width,248px);height:26px}
-      .dsh-codex-reasoning-effort-slider-knob{position:absolute;left:calc((100% - 30px)*var(--dsh-codex-reasoning-effort-slider-pos,0));top:-2px;width:30px;height:30px;border-radius:50%;background:var(--dsw-alias-bg-layer-2);box-shadow:var(--dsw-elevation-panel);border:.5px solid var(--dsw-alias-border-l1);pointer-events:auto;cursor:grab;transform:scale(1);transition:left .18s cubic-bezier(.2,.8,.2,1),transform .14s ease}
+      /* 本地适配：Ultra 档的流光伪元素(.fill:before)带 z-index:1，会盖住只有 auto 层级的旋钮；
+         扫光只覆盖已填充段（到旋钮圆心），所以旋钮左半边被糊住、看起来像半透明。给旋钮更高层级。 */
+      .dsh-codex-reasoning-effort-slider-knob{position:absolute;z-index:2;left:calc((100% - 30px)*var(--dsh-codex-reasoning-effort-slider-pos,0));top:-2px;width:30px;height:30px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.35),0 0 0 .5px rgba(0,0,0,.10);border:0;pointer-events:auto;cursor:grab;transform:scale(1);transition:left .18s cubic-bezier(.2,.8,.2,1),transform .14s ease}
       .dsh-codex-reasoning-effort-slider-knob:hover,.dsh-codex-reasoning-effort-slider-rail.dragging .dsh-codex-reasoning-effort-slider-knob{transform:scale(1.08)}
       .dsh-codex-reasoning-effort-slider-rail.dragging .dsh-codex-reasoning-effort-slider-knob{cursor:grabbing}
       .dsh-codex-reasoning-effort-slider-burst{position:absolute;left:calc(100% - 41px);top:-13px;width:52px;height:52px;pointer-events:none;z-index:4}
@@ -85,7 +101,8 @@ window.__ModuleLoader__.load({
       .dsh-codex-reasoning-effort-slider-tooltip span{color:var(--dsw-alias-label-secondary)}
       .dsh-codex-reasoning-effort-slider-fast .dsh-codex-reasoning-effort-slider-tooltip span{display:block}
       .dsh-codex-reasoning-effort-slider-fast .dsh-codex-reasoning-effort-slider-tooltip span:first-child{color:var(--dsw-alias-label-primary)}
-      .dsh-codex-reasoning-effort-slider-fast .dsh-codex-reasoning-effort-slider-tooltip{left:50%;transform:translateX(-50%)}.dsh-codex-reasoning-effort-slider-reset .dsh-codex-reasoning-effort-slider-tooltip{right:-15px}
+      /* 悬浮在闪电上方的详情：以闪电中心居中；靠近屏幕左边时自动右移，避免像之前那样被裁掉开头。 */
+      .dsh-codex-reasoning-effort-slider-fast .dsh-codex-reasoning-effort-slider-tooltip{white-space:normal;width:max-content;max-width:240px;text-align:left;left:var(--dsh-codex-reasoning-effort-slider-tooltip-left, 0)}.dsh-codex-reasoning-effort-slider-reset .dsh-codex-reasoning-effort-slider-tooltip{right:-15px}
       .dsh-codex-reasoning-effort-slider-tool:hover .dsh-codex-reasoning-effort-slider-tooltip,.dsh-codex-reasoning-effort-slider-tool:focus-visible .dsh-codex-reasoning-effort-slider-tooltip{opacity:1}
       .dsh-codex-reasoning-effort-slider-models{height:100%;padding:5px;overflow:auto;overscroll-behavior:contain}
       .dsh-codex-reasoning-effort-slider-menu-title{display:flex;align-items:center;justify-content:space-between;height:24px;padding:0 8px;color:var(--dsw-alias-label-caption);font-size:12px}
@@ -114,7 +131,11 @@ window.__ModuleLoader__.load({
       return h('svg', { className: `dsh-codex-reasoning-effort-slider-icon${small ? ' dsh-codex-reasoning-effort-slider-small' : ''}`, viewBox: '0 0 24 24', 'aria-hidden': true },
         h('path', { d: paths[name] || paths.model }));
     }
-    function Selector({ directory, load, select, available, locked, t }) {
+    function Selector({ directory, load, select, setTeamMode, getTeamAvailable, useProjection, useSessionStatus, sessionId, available, locked, t }) {
+      const teamAvailable = typeof getTeamAvailable === 'function' ? Boolean(getTeamAvailable()) : false;
+      // 会话是否正在跑模型（UiSession 的 sessionStatus 已按 sessionId 汇总 running）。
+      const sessionStatuses = typeof useSessionStatus === 'function' ? useSessionStatus(value => value) : undefined;
+      const sessionRunning = Boolean(sessionStatuses && sessionId !== undefined && sessionStatuses.get(sessionId) && sessionStatuses.get(sessionId).running);
       const state = useSyncExternalStore(fn => directory.subscribe(fn), () => directory.getSnapshot());
       const [open, setOpen] = useState(false);
       const [present, setPresent] = useState(false);
@@ -126,11 +147,24 @@ window.__ModuleLoader__.load({
       const [message, setMessage] = useState(false);
       const [error, setError] = useState('');
       const [busy, setBusy] = useState(false);
-      const rootRef = useRef(null), popupRef = useRef(null), railRef = useRef(null);
+      const [teamPending, setTeamPending] = useState(false);
+      const [confirmOff, setConfirmOff] = useState(false);
+      const [notice, setNotice] = useState('');
+      const [teamLocal, setTeamLocal] = useState(null);
+      const readProjection = useProjection;
+      const agentTeam = typeof readProjection === 'function' ? readProjection('agentTeam') : undefined;
+      const projectionOn = agentTeam && typeof agentTeam.enabled === 'boolean' ? agentTeam.enabled : undefined;
+      // 点击后先用本地值渲染，投影回来再交还给投影，避免连点时状态来回跳。
+      const teamOn = teamLocal !== null ? teamLocal : projectionOn === true;
+      useEffect(() => { if (projectionOn !== undefined) setTeamLocal(null); }, [projectionOn]);
+      useEffect(() => { setFast(teamOn); }, [teamOn]);
+      const rootRef = useRef(null), popupRef = useRef(null), railRef = useRef(null), tooltipRef = useRef(null);
       const canvasRef = useRef(null), burstRef = useRef(null), triggerRef = useRef(null);
       const previewRef = useRef(null), dragRef = useRef(false), dragPointerRef = useRef(null), mountedRef = useRef(true);
       const busyRef = useRef(false);
       const timersRef = useRef([]);
+      const confirmTimerRef = useRef(0);
+      const noticeTimerRef = useRef(0);
       const latest = useRef({});
       const selection = state.pending || state.current;
       const group = state.groups.find(g => g.id === selection?.provider);
@@ -204,6 +238,67 @@ window.__ModuleLoader__.load({
           }
         }
       }
+      /** 本地适配：闪电键 = 智能体团队协作开关。
+          DSH 0.2.2 起团队模式走 Remote：remote.agentTeams.setEnabled(sessionId, enabled)，
+          状态来自 agentTeam 投影（session 作用域的 slot 组件会收到 useProjection）。 */
+      function showNotice(text, duration) {
+        clearTimeout(noticeTimerRef.current);
+        setNotice(text);
+        if (duration) {
+          noticeTimerRef.current = setTimeout(() => {
+            if (mountedRef.current) setNotice('');
+          }, duration);
+          timersRef.current.push(noticeTimerRef.current);
+        }
+      }
+      async function toggleTeam() {
+        if (teamPending || busyRef.current) return;
+        clearTimeout(noticeTimerRef.current);
+        clearTimeout(confirmTimerRef.current);
+        // 模型正在输出：不尝试切换，直接给中文提示。
+        if (sessionRunning) { showNotice(t('teamBusy'), 1500); return; }
+        // 关闭团队：第一次点击只进入确认态，4 秒内再点一次才真正关闭。
+        if (teamOn && !confirmOff) {
+          setConfirmOff(true);
+          showNotice(t('teamConfirm'));
+          confirmTimerRef.current = setTimeout(() => {
+            if (!mountedRef.current) return;
+            setConfirmOff(false);
+            setNotice('');
+          }, 4000);
+          timersRef.current.push(confirmTimerRef.current);
+          return;
+        }
+        const previous = teamOn;
+        const next = !previous;
+        setTeamPending(true);
+        // 乐观切换：投影回来之前就用本地值渲染，连点也不会来回跳。
+        setTeamLocal(next);
+        // 本地切换通常 <100ms：慢的时候才显示「正在…」，避免三屏文字连闪。
+        const slowTimer = setTimeout(() => {
+          if (mountedRef.current) setNotice(next ? t('teamTurningOn') : t('teamTurningOff'));
+        }, 400);
+        timersRef.current.push(slowTimer);
+        try {
+          const failure = await (typeof setTeamMode === 'function'
+            ? setTeamMode(next)
+            : Promise.reject(new Error(t('teamUnavailable'))));
+          if (failure) throw new Error(String(failure));
+          showNotice(next ? t('teamOn') : t('teamOff'), 1500);
+        } catch (cause) {
+          if (typeof console !== 'undefined') console.warn('[effort-slider] team toggle failed', cause);
+          const message = String((cause && cause.message) || cause || '');
+          setTeamLocal(previous);
+          showNotice(/busy|running|generat|stream|in.?progress|locked|replying|turn/i.test(message) ? t('teamBusy') : t('teamFail'), 3000);
+        } finally {
+          clearTimeout(slowTimer);
+          if (mountedRef.current) {
+            setTeamPending(false);
+            // 等结果出来再退出确认态，避免两行文案先被压回单行再跳成结果。
+            setConfirmOff(false);
+          }
+        }
+      }
       function chooseEffort(id) {
         if (!selection || disabled || busyRef.current || !efforts.some(e => e.id === id)) return;
         showEffort(id);
@@ -213,13 +308,18 @@ window.__ModuleLoader__.load({
       function close() {
         discardDrag();
         setOpen(false);
+        // 关掉菜单时清掉提示/确认态，避免下次打开还挂着上一轮的文案。
+        clearTimeout(noticeTimerRef.current);
+        clearTimeout(confirmTimerRef.current);
+        setConfirmOff(false);
+        setNotice('');
         triggerRef.current?.focus({ preventScroll: true });
       }
       useLayoutEffect(() => {
         if (!open) return;
         let layoutFrame = 0;
         function outside(event) {
-          if (!rootRef.current?.contains(event.target)) close();
+          if (!rootRef.current?.contains(event.target) && !popupRef.current?.contains(event.target)) close();
         }
         function escape(event) {
           if (event.key !== 'Escape') return;
@@ -234,8 +334,22 @@ window.__ModuleLoader__.load({
           if (!trigger || !popup) return;
           const width = Math.min(272, innerWidth - 24);
           const left = Math.max(12, Math.min((trigger.left + trigger.right - width) / 2, innerWidth - width - 12));
-          rootRef.current.style.setProperty('--dsh-codex-reasoning-effort-slider-left', `${left}px`);
-          rootRef.current.style.setProperty('--dsh-codex-reasoning-effort-slider-bottom', `${Math.max(12, innerHeight - trigger.top + 8)}px`);
+          // 本地适配（DSH 0.2.1）：聊天面板带 backdrop-filter，会给 position:fixed 的子元素
+          // 创建包含块，导致弹出层按面板坐标定位而飘走。弹出层已 portal 到 body，
+          // 定位变量必须写在弹出层自身（portal 跨树，root 上的变量无法继承下来）。
+          const anchor = popupRef.current ?? rootRef.current;
+          anchor.style.setProperty('--dsh-codex-reasoning-effort-slider-left', `${left}px`);
+          anchor.style.setProperty('--dsh-codex-reasoning-effort-slider-bottom', `${Math.max(12, innerHeight - trigger.top + 8)}px`);
+          // 悬浮详情以闪电中心居中：按实际宽度算；贴屏幕边时向内收，避免被裁掉。
+          const tip = tooltipRef.current;
+          if (tip) {
+            const tipWidth = Math.min(240, tip.offsetWidth || 0);
+            if (tipWidth > 0) {
+              const boltCenter = left + 21;
+              const tipLeft = Math.max(8, Math.min(boltCenter - tipWidth / 2, innerWidth - 8 - tipWidth));
+              anchor.style.setProperty('--dsh-codex-reasoning-effort-slider-tooltip-left', `${tipLeft - left - 7}px`);
+            }
+          }
         }
         function resized() {
           cancelAnimationFrame(layoutFrame);
@@ -386,7 +500,7 @@ window.__ModuleLoader__.load({
         options[next].focus({ preventScroll: true });
         options[next].scrollIntoView({ block: 'nearest' });
       }
-      const classes = `dsh-codex-reasoning-effort-slider-popup${!open ? ' closed' : ''}${ultra ? ' ultra' : ''}${fast ? ' fast-mode' : ''}${message ? ' message' : ''}`;
+      const classes = `dsh-codex-reasoning-effort-slider-popup${!open ? ' closed' : ''}${ultra ? ' ultra' : ''}${fast ? ' fast-mode' : ''}${message ? ' message' : ''}${notice ? ' compact' : ''}${confirmOff ? ' confirming' : ''}`;
       const status = error || state.error || '';
       const currentLabel = labels[displayed] || state.retainedEffort || '';
       const triggerLabel = labels[savedEffort] || state.retainedEffort || '';
@@ -405,34 +519,21 @@ window.__ModuleLoader__.load({
           }, h('span', { className: 'dsh-codex-reasoning-effort-slider-option-name', title: option.name }, option.name),
           selection?.provider === provider.id && selection?.model === option.id ? icon('check', true) : null)))),
         !state.groups.length ? h('div', { className: 'dsh-codex-reasoning-effort-slider-status' }, state.status === 'loading' ? t('loading') : t('empty')) : null);
-      return h('div', { className: 'dsh-codex-reasoning-effort-slider-root', ref: rootRef, 'data-dsh-codex-reasoning-effort-slider-session': true },
-        h('style', null, styles),
-        h('button', { className: `dsh-codex-reasoning-effort-slider-trigger${savedEffort === 'max' ? ' ultra' : ''}`, ref: triggerRef, disabled,
-          'aria-label': `${modelName} ${triggerLabel}`, 'aria-expanded': open, 'aria-haspopup': 'dialog', 'aria-busy': busy,
-          onClick: () => {
-            if (open) close();
-            else { setPane(model ? 'effort' : 'models'); setOpen(true); load(); }
-          }
-        }, fast ? h('svg', { className: 'dsh-codex-reasoning-effort-slider-trigger-bolt', viewBox: '0 0 24 24', 'aria-hidden': true },
-          h('path', { d: 'M14.4 2Q16 .2 15.8 2.5L15.1 8.5H20.5Q22 8.5 21 9.8L10.7 21.7Q9 23.4 9.2 21.2L10 14.2H4.2Q2.6 14.2 3.6 12.9L14.4 2Z' })) : null,
-        h('span', { className: 'dsh-codex-reasoning-effort-slider-compact' }, icon('model')),
-        h('span', { className: 'dsh-codex-reasoning-effort-slider-caption' }, modelName,
-          triggerLabel ? h('span', { className: 'dsh-codex-reasoning-effort-slider-trigger-effort' }, ` ${triggerLabel}`) : null), icon('down', true)),
-        h('section', { className: classes, ref: popupRef, role: 'dialog', 'aria-label': pane === 'models' ? t('model') : t('effort'),
+      const popupNode = h('section', { className: classes, ref: popupRef, role: 'dialog', 'aria-label': pane === 'models' ? t('model') : t('effort'),
           'aria-hidden': !open, inert: !open ? '' : undefined, style: { '--dsh-codex-reasoning-effort-slider-height': `${pane === 'models' ? menuHeight : 104}px` } },
           modelsView,
           h('div', { className: `dsh-codex-reasoning-effort-slider-pane dsh-codex-reasoning-effort-slider-main${pane !== 'effort' ? ' hidden' : ''}`, inert: pane !== 'effort' ? '' : undefined },
-            h('button', { className: `dsh-codex-reasoning-effort-slider-tool dsh-codex-reasoning-effort-slider-fast${fast ? ' active' : ''}`, 'aria-label': t('fast'), 'aria-pressed': fast, onClick: () => setFast(!fast) },
+            teamAvailable ? h('button', { className: `dsh-codex-reasoning-effort-slider-tool dsh-codex-reasoning-effort-slider-fast${teamOn ? ' active' : ''}`, 'aria-label': t('team'), 'aria-pressed': teamOn, 'aria-busy': teamPending, title: t('team'), disabled: !available || Boolean(locked), onClick: toggleTeam },
               h('svg', { className: 'dsh-codex-reasoning-effort-slider-bolt', viewBox: '0 0 24 24', 'aria-hidden': true },
                 h('path', { d: 'M14.4 2Q16 .2 15.8 2.5L15.1 8.5H20.5Q22 8.5 21 9.8L10.7 21.7Q9 23.4 9.2 21.2L10 14.2H4.2Q2.6 14.2 3.6 12.9L14.4 2Z' })),
-              h('span', { className: 'dsh-codex-reasoning-effort-slider-tooltip', role: 'tooltip' },
-                h('span', null, t('fast')), h('span', null, t('usage')), h('span', null, t('visual')))),
+              h('span', { className: 'dsh-codex-reasoning-effort-slider-tooltip', role: 'tooltip', ref: tooltipRef },
+                h('span', null, t('team')), h('span', null, t('teamHint')), h('span', null, t('teamCost')))) : null,
             h('button', { className: 'dsh-codex-reasoning-effort-slider-model-link', onClick: () => setPane('models'), 'aria-label': t('model'), title: modelName },
               h('span', { className: 'dsh-codex-reasoning-effort-slider-heading' }, currentLabel || t('choose'), icon('chevron', true)),
               h('span', { className: 'dsh-codex-reasoning-effort-slider-model' }, modelName)),
-            h('div', { className: 'dsh-codex-reasoning-effort-slider-warning' }, h('span', null, t('warning'))),
+            h('div', { className: 'dsh-codex-reasoning-effort-slider-warning' }, h('span', { title: notice || undefined }, notice || t('warning'))),
             h('button', { className: 'dsh-codex-reasoning-effort-slider-tool dsh-codex-reasoning-effort-slider-reset', disabled: busy || !model?.reasoning, 'aria-label': t('reset'),
-              onClick: () => { setFast(false); chooseEffort(model?.reasoning?.defaultEffort); }
+              onClick: () => { setConfirmOff(false); setNotice(''); chooseEffort(model?.reasoning?.defaultEffort); }
             }, icon('reset'), h('span', { className: 'dsh-codex-reasoning-effort-slider-tooltip', role: 'tooltip' }, t('reset'))),
             efforts.length ? h('div', { className: `dsh-codex-reasoning-effort-slider-rail${dragging ? ' dragging' : ''}`, ref: railRef,
               style: { '--dsh-codex-reasoning-effort-slider-pos': fraction }, role: 'slider', tabIndex: 0,
@@ -452,14 +553,43 @@ window.__ModuleLoader__.load({
           status ? h('div', { className: 'dsh-codex-reasoning-effort-slider-status dsh-codex-reasoning-effort-slider-error', role: 'alert' },
             h('span', { className: 'dsh-codex-reasoning-effort-slider-error-text', title: status }, status),
             h('button', { className: 'dsh-codex-reasoning-effort-slider-menu-back', 'aria-label': t('retry'), title: t('retry'),
-              onClick: () => { setError(''); load(); } }, icon('reset', true))) : null));
+              onClick: () => { setError(''); load(); } }, icon('reset', true))) : null);
+      return h('div', { className: 'dsh-codex-reasoning-effort-slider-root', ref: rootRef, 'data-dsh-codex-reasoning-effort-slider-session': true },
+        h('style', null, styles),
+        h('button', { className: `dsh-codex-reasoning-effort-slider-trigger${savedEffort === 'max' ? ' ultra' : ''}`, ref: triggerRef, disabled,
+          'aria-label': `${modelName} ${triggerLabel}`, 'aria-expanded': open, 'aria-haspopup': 'dialog', 'aria-busy': busy,
+          onClick: () => {
+            if (open) close();
+            else { setPane(model ? 'effort' : 'models'); setOpen(true); load(); }
+          }
+        }, fast ? h('svg', { className: 'dsh-codex-reasoning-effort-slider-trigger-bolt', viewBox: '0 0 24 24', 'aria-hidden': true },
+          h('path', { d: 'M14.4 2Q16 .2 15.8 2.5L15.1 8.5H20.5Q22 8.5 21 9.8L10.7 21.7Q9 23.4 9.2 21.2L10 14.2H4.2Q2.6 14.2 3.6 12.9L14.4 2Z' })) : null,
+        h('span', { className: 'dsh-codex-reasoning-effort-slider-compact' }, icon('model')),
+        h('span', { className: 'dsh-codex-reasoning-effort-slider-caption' }, modelName,
+          triggerLabel ? h('span', { className: 'dsh-codex-reasoning-effort-slider-trigger-effort' }, ` ${triggerLabel}`) : null), icon('down', true)),
+        typeof document !== 'undefined' ? ReactDOM.createPortal(popupNode, document.body) : popupNode);
     }
     return {
       inject: ['slots', 'modelDirectories', 'sessions', 'locale', 'remote', 'remote.session'],
       apply(ctx) {
         ctx.effect(() => ctx.locale.register(NS, { zh, en }));
+        // remote 命名空间是独立的 cordis service（名字就是 remote.agentTeams）。
+        // 不声明 inject 时直接读 ctx.remote.agentTeams 会抛 "cannot get property ... without inject"，
+        // 所以用 ctx.get 惰性取；旧版本没有这个 service 时返回 undefined，按钮据此隐藏。
+        const teamService = () => {
+          try {
+            if (typeof ctx.get === 'function') {
+              const value = ctx.get('remote.agentTeams');
+              if (value !== undefined) return value;
+            }
+          } catch {}
+          return undefined;
+        };
         ctx.slots.inject('conversation.input.model', () => ctx.slots.register({
           name: 'conversation.input.model',
+          // 本地适配（DSH 0.2.1）：slot 规则要求同优先级不可重复注册，priority 最低者渲染。
+          // 官方模型席以默认 priority 0 注册，这里用 -1 确定性地遮蔽它，不再依赖加载顺序。
+          priority: -1,
           locale: NS,
           inject(sessionId) {
             const directory = ctx.modelDirectories.directoryFor(sessionId);
@@ -467,7 +597,17 @@ window.__ModuleLoader__.load({
             return {
               available, directory: directory.store,
               load: () => { if (available) directory.load().catch(() => {}); },
-              select: selection => available ? directory.select(selection) : Promise.resolve(undefined)
+              select: selection => available ? directory.select(selection) : Promise.resolve(undefined),
+              // 0.2.2 的 remote 服务按命名空间挂方法。渲染时探测 agentTeams；
+              // 若运行时尚未挂载（旧版本），按钮也保留，点击时给出「不可用」提示。
+              getTeamAvailable: () => Boolean(teamService()),
+              setTeamMode: enabled => {
+                const teams = teamService();
+                if (!available || !teams) return Promise.reject(new Error('unavailable'));
+                return teams.setEnabled(sessionId, enabled).then(response => (response && response.ok)
+                  ? null
+                  : ((response && response.error && response.error.message) || 'unavailable'));
+              }
             };
           }
         }, Selector));
